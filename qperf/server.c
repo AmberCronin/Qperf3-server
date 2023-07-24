@@ -38,38 +38,6 @@ static int udp_listen(struct addrinfo *addr)
             perror("setsockopt(SO_REUSEADDR) failed");
             return -1;
         }
-        //-----------------------Adjusted buffer size here------------------------------------- 
-      	int buffer_size = 1024 * 1024 * 10.72; // 10.72MB
-        if (setsockopt(s, SOL_SOCKET, SO_SNDBUF, &buffer_size, sizeof(buffer_size)) == -1) {//Send Buffer
-            perror("setsockopt SO_SNDBUF failed");
-            close(s);
-            return -1;
-        }
-        if (setsockopt(s, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof(buffer_size)) == -1) {//Receive buffer
-            perror("setsockopt SO_RCVBUF failed");
-            close(s);
-            return -1;
-        }
-	//-----------------------Adjusted buffer size here-------------------------------------
-	
-
-	// Check buffer sizes
-        int actual_sndbuf, actual_rcvbuf;
-        socklen_t optlen = sizeof(int);
-        if (getsockopt(s, SOL_SOCKET, SO_SNDBUF, &actual_sndbuf, &optlen) == -1) {
-            perror("getsockopt SO_SNDBUF failed");
-            close(s);
-            return -1;
-        }
-        if (getsockopt(s, SOL_SOCKET, SO_RCVBUF, &actual_rcvbuf, &optlen) == -1) {
-            perror("getsockopt SO_RCVBUF failed");
-            close(s);
-            return -1;
-        }
-        printf("Actual send buffer size: %d\n", actual_sndbuf);
-        printf("Actual receive buffer size: %d\n", actual_rcvbuf);
-
-
 
         if(bind(s, rp->ai_addr, rp->ai_addrlen) == 0) {
             return s; // success

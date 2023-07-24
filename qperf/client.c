@@ -168,21 +168,6 @@ int run_client(const char *port, bool gso, const char *logfile, const char *cc, 
     }
 
 
-
-    //-----------------------Adjusted buffer size here-------------------------------------
-        int buffer_size = 1024 * 1024 * 10.72; // 11MB
-        if (setsockopt(client_socket, SOL_SOCKET, SO_SNDBUF, &buffer_size, sizeof(buffer_size)) == -1) {//Send Buffer
-            perror("setsockopt SO_SNDBUF failed");
-            close(client_socket);
-            return -1;
-        }
-        if (setsockopt(client_socket, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof(buffer_size)) == -1) {//Receive buffer
-            perror("setsockopt SO_RCVBUF failed");
-            close(client_socket);
-            return -1;
-        }
-        //-----------------------Adjusted buffer size here-------------------------------------
-
     struct sockaddr_in local = {0};
     local.sin_family = AF_INET;
     if (bind(client_socket, (void *)&local, sizeof(local)) != 0) {
