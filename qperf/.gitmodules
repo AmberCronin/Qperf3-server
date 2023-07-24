@@ -1,0 +1,5 @@
+[submodule "extern/quicly"]
+	path = extern/quicly
+	url = https://github.com/h2o/quicly.git
+[submodule "qperf"]
+	url = https://git.viasat.com/SystemSciences/Qperf3-server.git
