@@ -41,19 +41,19 @@ extern "C" {
 
 
 //Currently set in packets for cwnd size
-static uint32_t min_clamp = (1*1024*1024)/1500;  //1MB
+static uint32_t min_clamp = (16*1024*1024)/1500;  //1MB
 static uint32_t max_clamp = (24*1024*1024)/1500; //24MB
 
 static uint32_t rtt_high_factor = 4; //Determine it to be 4
 
 
-static float rtt_min_floor = 550 / 1000; //Determine it to be 600ms 
-static float rtt_min = 600 / 1000; //Determine it to be 600ms 
+static float rtt_min_floor = 550 ; //Determine it to be 600ms 
+static float rtt_min = 650 ; //Determine it to be 600ms 
 
 // static float tcp_rbc_lpf_rtt_thresh = 3000;   
 
-static float rtt_max_floor = 1500 / 1000; //Change to 1500ms
-static float rtt_max_configurable = 2500 / 1000; // Change to be 2500ms
+static float rtt_max_floor = 1500 ; //Change to 1500ms
+static float rtt_max_configurable = 2500 ; // Change to be 2500ms
 
 // static uint32_t cwnd_safe_factor = 90;
 
