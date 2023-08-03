@@ -129,11 +129,17 @@ static uint32_t get_cwnd_inbound_sgmnts(quicly_cc_t *cc, uint32_t crntrtt, uint3
 	const uint32_t rtt_lowvaluemarker = cc->state.wrc.rtt_low_water_marker;
 	const int32_t maxcwnd_rttslope = cc->state.wrc.cwndslope;
 
-	if (crntrtt >= rtt_highvaluemarker)
+	if (crntrtt >= rtt_highvaluemarker){
+        printf("first if statement get_cwnd_inbound_sgmnts\n");
 		return get_cwnd_lbound_sgmnts(mtu);
-	else if (crntrtt <= rtt_lowvaluemarker)
+    }
+        
+	else if (crntrtt <= rtt_lowvaluemarker){
+        printf("second if statement get_cwnd_inbound_sgmnts\n");
 		return get_cwnd_ubound_sgmnts(mtu);
+    }
 	else {
+        printf("else statement get_cwnd_inbound_sgmnts\n");
 		uint32_t crntcwnd_bytes =
 			max_clamp +
 			((crntrtt - rtt_lowvaluemarker) * maxcwnd_rttslope);
@@ -146,41 +152,52 @@ static void wrc_on_acked(quicly_cc_t *cc, const quicly_loss_t *loss, uint32_t by
                            uint64_t next_pn, int64_t now, uint32_t max_udp_payload_size) 
 {
     /* Variables that replace the ones from the tcp function */
-    uint32_t srtt_crnt = 0; //current smooth RTT
-    int32_t rtt_ms = loss->rtt.latest / 1000; // Assuming latest is in microseconds
-    uint32_t srtt_prev = loss->rtt.smoothed / 1000; //previous smooth RTT
+    double srtt_crnt = 0; //setting current smooth RTT
+    double rtt_ms = loss->rtt.latest / 1000.0; /* ms -> s */
+    double srtt_prev = loss->rtt.smoothed/1000.0; /* ms -> s */
 
     /* If the rtt is not valid, go to debug info */
-    if (now <= 0) {
+    if (loss->rtt.latest <= 0) {
         goto debug_info;
     }
 
-    cc->state.wrc.rtt_cnt = cc->state.wrc.rtt_cnt + 1;
+    cc->state.wrc.rtt_cnt++;
 
     /* Replacing the min_rtt_check_threshold with a constant value of 10 */
     if (cc->state.wrc.rtt_cnt <= 10) {
         int flag = 0;
         if (cc->state.wrc.init_rtt == 0) {
+            printf("first if\n");
             cc->state.wrc.init_rtt = cc->state.wrc.min_rtt = rtt_ms; //loss->rtt.smoothed = rtt_ms; not present
             srtt_prev = rtt_ms;
             flag = 1;
+            
         } else if (rtt_ms < cc->state.wrc.min_rtt) {
+            printf("second if\n");
             cc->state.wrc.min_rtt = rtt_ms;
             flag = 1;
+            
         }
         if (flag) {
 			// init RTT or smaller min_rtt detected.
-            rbc_calculate_boundary(cc, rtt_ms); //TODO Change for the implementation of QUIC
+            printf("3rd if\n");
+            rbc_calculate_boundary(cc, rtt_ms);
+            
 		}
 
     }
     srtt_crnt = srtt_prev; 
-
-    cc->cwnd_clamp = get_cwnd_inbound_sgmnts(cc, rtt_ms, max_udp_payload_size); // TODO: Figure out what mss is
+    printf("max_udp_payload_size: %f\n", max_udp_payload_size);
+    printf("BEFORE...cwnd_clamp: %f\n", cc->cwnd_clamp);
+    cc->cwnd_clamp = get_cwnd_inbound_sgmnts(cc, srtt_crnt, max_udp_payload_size);
+    printf("AFTER...cwnd_clamp: %f\n", cc->cwnd_clamp);
 
     debug_info:
         printf("Debug Info\n");
-        
+    
+    printf("rtt:%lld, srtt:%lld, rtt_ms:%f, srtt_divided:%f, rtt_cnt:%d, min_rtt:%f\n",loss->rtt.latest, loss->rtt.smoothed, rtt_ms, srtt_prev, cc->state.wrc.rtt_cnt, cc->state.wrc.min_rtt);
+    printf("");
+
     
     assert(inflight >= bytes);
     /* Do not increase congestion window while in recovery. */
@@ -297,6 +314,7 @@ static void cubic_reset(quicly_cc_t *cc, uint32_t initcwnd)
     cc->state.wrc.rtt_high_water_marker = rtt_max_configurable;
     cc->state.wrc.rtt_low_water_marker = rtt_min; 
 
+    cc->state.wrc.rtt_cnt = 0;
     cc->state.wrc.init_rtt = 0;
     cc->state.wrc.min_rtt = rtt_max_configurable;
     cc->state.wrc.enter_ca_tm = 0;
