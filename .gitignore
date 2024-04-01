@@ -1,0 +1,7 @@
+.cache/
+build-qperf/
+secrets/
+server/qperf/
+container.id
+server.crt
+server.key
